@@ -84,7 +84,7 @@ bool Human::MakeMove()
 					}
 				}
 			}
-			game->DrawPossibleMoves(m_checkers[nChecker].CanMove(), canMove);
+			game->DrawPossibleMoves(m_checkers[nChecker].CanMove(), canMove, GetColor());
 		}
 	}
 }

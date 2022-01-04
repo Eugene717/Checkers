@@ -17,5 +17,6 @@ public:
 	bool EatChecker();
 	void CanBeatN();
 	bool CanBeat();
+	char GetColor() const;
 	virtual bool MakeMove() = 0;
 };

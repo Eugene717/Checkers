@@ -177,7 +177,7 @@ void Game::DrawGame()
 	m_window.display();
 }
 
-void Game::DrawPossibleMoves(const std::vector<sf::Vector2i>& pos, const bool& canMove)
+void Game::DrawPossibleMoves(const std::vector<sf::Vector2i>& pos, const bool& canMove, const char& player)
 {
 	sf::RectangleShape shape;
 	shape.setFillColor(sf::Color(255, 255, 0, 0));
@@ -196,8 +196,16 @@ void Game::DrawPossibleMoves(const std::vector<sf::Vector2i>& pos, const bool& c
 		}
 	}
 
-	m_window.draw(*m_pImpl->m_playerOne);
-	m_window.draw(*m_pImpl->m_playerTwo);
+	if (player == 'w')
+	{
+		m_window.draw(*m_pImpl->m_playerOne);
+		m_window.draw(*m_pImpl->m_playerTwo);
+	}
+	else
+	{
+		m_window.draw(*m_pImpl->m_playerTwo);
+		m_window.draw(*m_pImpl->m_playerOne);
+	}
 	m_window.display();
 }
 

@@ -63,3 +63,8 @@ bool Player::CanBeat()
 	else
 		return true;
 }
+
+char Player::GetColor() const
+{
+	return m_color;
+}
