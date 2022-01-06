@@ -338,7 +338,7 @@ void Game::SinglePlayer()
 				m_window.close();
 		}
 
-		DrawGame();
+		
 
 	}
 }
