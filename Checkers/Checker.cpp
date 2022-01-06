@@ -55,6 +55,11 @@ void Checker::setPosition(const float& x, const float& y)
 	m_queenSprite.setPosition(x, y);
 }
 
+sf::Vector2i Checker::GetPosition() const
+{
+	return m_pos;
+}	
+
 std::pair<bool, bool> Checker::Move(const sf::Vector2f& posGraphic,const bool& canMoves)
 {
 	Game* game = Game::GetInstance();

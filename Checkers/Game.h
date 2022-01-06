@@ -30,6 +30,7 @@ public:
 	int MainMenu();
 	void DrawGame();
 	void DrawPossibleMoves(const std::vector<sf::Vector2i>& pos, const bool& canMove, const char& player);
+	void DrawPossibleBlows(const std::vector<sf::Vector2i>& pos);
 	void DrawMenu();
 	bool Exit();
 

@@ -4,6 +4,18 @@
 Human::Human(char&& color) :Player(std::move(color))
 { }
 
+std::vector<sf::Vector2i> Human::GetCanBeatNPos() const
+{
+	std::vector<sf::Vector2i> pos;
+
+	for (auto i : m_canBeatN)
+	{
+		pos.push_back(m_checkers[i].GetPosition());
+	}
+
+	return pos;
+}
+
 bool Human::MakeMove()
 {
 	Game* game = Game::GetInstance();
@@ -15,6 +27,9 @@ bool Human::MakeMove()
 	while (game->m_window.isOpen())
 	{
 		pos = game->m_window.mapPixelToCoords(sf::Mouse::getPosition(game->m_window));
+
+		if (CanBeat() && !isMove)
+			game->DrawPossibleBlows(GetCanBeatNPos());
 
 		if (game->m_window.pollEvent(game->m_event))
 		{
@@ -60,6 +75,7 @@ bool Human::MakeMove()
 						std::pair<bool, bool> moveRes = m_checkers[nChecker].Move(sf::Vector2f(pos.x, pos.y), canMove);
 						if (moveRes.first)
 						{
+							m_NbeatChecker = nChecker;
 							game->DrawGame();
 							return moveRes.second;
 						}

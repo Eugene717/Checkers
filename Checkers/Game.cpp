@@ -182,7 +182,7 @@ void Game::DrawPossibleMoves(const std::vector<sf::Vector2i>& pos, const bool& c
 	sf::RectangleShape shape;
 	shape.setFillColor(sf::Color(255, 255, 0, 0));
 	shape.setOutlineColor(sf::Color(255, 255, 0));
-	shape.setOutlineThickness(3);
+	shape.setOutlineThickness(2);
 	shape.setSize(sf::Vector2f(56, 56));
 
 	m_window.draw(m_pImpl->m_s_board);
@@ -206,6 +206,28 @@ void Game::DrawPossibleMoves(const std::vector<sf::Vector2i>& pos, const bool& c
 		m_window.draw(*m_pImpl->m_playerTwo);
 		m_window.draw(*m_pImpl->m_playerOne);
 	}
+	m_window.display();
+}
+
+void Game::DrawPossibleBlows(const std::vector<sf::Vector2i>& pos)
+{	
+	sf::RectangleShape shape;
+	shape.setFillColor(sf::Color(255, 255, 0, 0));
+	shape.setOutlineColor(sf::Color::Green);
+	shape.setOutlineThickness(2);
+	shape.setSize(sf::Vector2f(56, 56));
+
+	m_window.draw(m_pImpl->m_s_board);
+
+	for (auto i : pos)
+	{
+		shape.setPosition(i.y * 56 + 28, i.x * 56 + 28);
+		m_window.draw(shape);
+	}
+
+	m_window.draw(*m_pImpl->m_playerOne);
+	m_window.draw(*m_pImpl->m_playerTwo);
+
 	m_window.display();
 }
 
@@ -345,11 +367,12 @@ void Game::OnePC()
 				if (!m_pImpl->m_playerTwo->EatChecker())
 				{
 					DrawGame();
-					if (!m_pImpl->m_playerOne->CanBeat())
+					if (!m_pImpl->m_playerOne->CanBeatAgain())
 						break;
 				}
 				else
 				{
+					DrawGame();
 					AnnounceWinner('b');
 					return;
 				}
@@ -359,11 +382,12 @@ void Game::OnePC()
 				if (!m_pImpl->m_playerOne->EatChecker())
 				{
 					DrawGame();
-					if (!m_pImpl->m_playerTwo->CanBeat())
+					if (!m_pImpl->m_playerTwo->CanBeatAgain())
 						break;
 				}
 				else
 				{
+					DrawGame();
 					AnnounceWinner('w');
 					return;
 				}
@@ -376,11 +400,12 @@ void Game::OnePC()
 				if (!m_pImpl->m_playerOne->EatChecker())
 				{
 					DrawGame();
-					if (!m_pImpl->m_playerTwo->CanBeat())
+					if (!m_pImpl->m_playerTwo->CanBeatAgain())
 						break;
 				}
 				else
 				{
+					DrawGame();
 					AnnounceWinner('w');
 					return;
 				}
@@ -390,11 +415,12 @@ void Game::OnePC()
 				if (!m_pImpl->m_playerTwo->EatChecker())
 				{
 					DrawGame();
-					if (!m_pImpl->m_playerOne->CanBeat())
+					if (!m_pImpl->m_playerOne->CanBeatAgain())
 						break;
 				}
 				else
 				{
+					DrawGame();
 					AnnounceWinner('b');
 					return;
 				}
