@@ -5,6 +5,7 @@ Player::Player(char&& color) :m_color(std::move(color))
 {
 	Game* game = Game::GetInstance();
 	m_NbeatChecker = -1;
+	queened = false;
 
 	for (int i = 0; i < 8; i++)
 	{
@@ -67,6 +68,12 @@ bool Player::CanBeat()
 
 bool Player::CanBeatAgain()
 {
+	if (queened == true)
+	{
+		queened = false;
+		return false;
+	}
+
 	CanBeatN();
 
 	for (auto i : m_canBeatN)

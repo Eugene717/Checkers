@@ -11,10 +11,11 @@ struct GameIMPL
 	sf::Font m_font;
 	sf::Texture m_t_board;
 	sf::Sprite m_s_board;
+	bool m_sound;
+	bool m_returnToMainMenu;
 	sf::Texture m_t_soundOn;
-	sf::Sprite m_s_soundOn;
 	sf::Texture m_t_soundOff;
-	sf::Sprite m_s_soundOff;
+	sf::Sprite m_s_sound;
 	Player* m_playerOne;
 	Player* m_playerTwo;
 	std::default_random_engine m_random;
@@ -28,10 +29,10 @@ GameIMPL::GameIMPL()
 	m_t_board.loadFromFile("images/board.png");
 	m_s_board.setTexture(m_t_board); 
 	m_t_soundOn.loadFromFile("images/sound_on.png");	
-	m_s_soundOn.setTexture(m_t_soundOn); 
 	m_t_soundOff.loadFromFile("images/sound_off.png");	
-	m_s_soundOff.setTexture(m_t_soundOff); 
-
+	m_sound = true;
+	m_returnToMainMenu = false;
+	
 	std::random_device rd;
 	m_random.seed(rd());
 	m_playerOne = nullptr;
@@ -57,6 +58,11 @@ Game::~Game()
 {
 	delete m_game;
 	delete m_pImpl;
+}
+
+bool Game::GetSound() const
+{
+	return m_pImpl->m_sound;
 }
 
 char Game::FirstTurn() const
@@ -160,10 +166,13 @@ int Game::MainMenu()
 			menuNum = 5;
 		}
 
-		if (sf::Mouse::isButtonPressed(sf::Mouse::Left) && menuNum > 0)
+		if (m_event.type == sf::Event::MouseButtonReleased)
 		{
-			m_window.clear(sf::Color::White);
-			return menuNum;
+			if (m_event.key.code == sf::Mouse::Left)
+			{
+				m_window.clear(sf::Color::White);
+				return menuNum;
+			}
 		}
 
 		m_window.clear(sf::Color::White);
@@ -188,7 +197,7 @@ void Game::DrawGame()
 	m_window.display();
 }
 
-void Game::DrawMenu()
+bool Game::DrawMenu()
 {
 	float centerPos = m_window.getSize().x / 2;
 
@@ -203,16 +212,111 @@ void Game::DrawMenu()
 	sf::Text toMenu("Exit to menu", m_pImpl->m_font);
 	toMenu.setCharacterSize(40);
 	toMenu.setFillColor(sf::Color::Black);
-	toMenu.setPosition(centerPos - toMenu.getGlobalBounds().width / 2, shape.getGlobalBounds().top);
-	sf::Text exit("Exit", m_pImpl->m_font);
+	toMenu.setOrigin(toMenu.getGlobalBounds().width / 2, toMenu.getGlobalBounds().height / 2);
+	toMenu.setPosition(252, 190);
+	sf::Text exit("Exit to desktop", m_pImpl->m_font);
 	exit.setFillColor(sf::Color::Black);
 	exit.setCharacterSize(40);
-	exit.setPosition(centerPos - exit.getGlobalBounds().width / 2, toMenu.getPosition().y + 70);
+	exit.setOrigin(exit.getGlobalBounds().width / 2, exit.getGlobalBounds().height / 2);
+	exit.setPosition(252, toMenu.getPosition().y + 60);
+	if (m_pImpl->m_sound)
+		m_pImpl->m_s_sound.setTexture(m_pImpl->m_t_soundOn);
+	else
+		m_pImpl->m_s_sound.setTexture(m_pImpl->m_t_soundOff);
+	m_pImpl->m_s_sound.setPosition(shape.getGlobalBounds().left + 284, shape.getGlobalBounds().top + 134);
+	m_pImpl->m_s_sound.setOrigin(16, 16);
 
-	m_window.draw(shape);
-	m_window.draw(toMenu);
-	m_window.draw(exit);
-	m_window.display();
+	sf::Vector2f pos;
+	int menu; 
+
+	while (m_window.isOpen())
+	{
+		while (m_window.pollEvent(m_event))
+		{
+			if (m_event.type == sf::Event::Closed)
+				m_window.close();
+		}
+
+		pos = m_window.mapPixelToCoords(sf::Mouse::getPosition(m_window));
+		menu = -1;
+
+		toMenu.setFillColor(sf::Color::Black);
+		exit.setFillColor(sf::Color::Black);
+		m_pImpl->m_s_sound.setScale(1, 1);
+		toMenu.setScale(1, 1);
+		exit.setScale(1, 1);
+
+		if (sf::IntRect(toMenu.getGlobalBounds()).contains(sf::Mouse::getPosition(m_window)))
+		{
+			toMenu.setScale(1.05, 1.05);
+			if (m_event.type == sf::Event::MouseButtonReleased)
+			{
+				if (m_event.key.code == sf::Mouse::Left)
+				{
+					delete m_pImpl->m_playerOne;
+					m_pImpl->m_playerOne = nullptr;
+					delete m_pImpl->m_playerTwo;
+					m_pImpl->m_playerTwo = nullptr;
+					m_pImpl->m_returnToMainMenu = true;
+					return true;
+				}
+			}
+		}
+		if (sf::IntRect(exit.getGlobalBounds()).contains(sf::Mouse::getPosition(m_window)))
+		{
+			exit.setScale(1.05, 1.05);
+			if (m_event.type == sf::Event::MouseButtonReleased)
+			{
+				if (m_event.key.code == sf::Mouse::Left)
+				{
+					delete m_pImpl->m_playerOne;
+					delete m_pImpl->m_playerTwo;
+					m_window.close();
+				}
+			}
+		}
+		if (sf::IntRect(m_pImpl->m_s_sound.getGlobalBounds()).contains(sf::Mouse::getPosition(m_window)))
+		{
+			m_pImpl->m_s_sound.setScale(1.15, 1.15);
+			if (m_event.type == sf::Event::MouseButtonReleased)
+			{
+				if (m_event.key.code == sf::Mouse::Left)
+				{
+					if (m_pImpl->m_sound)
+					{
+						m_pImpl->m_sound = false;
+						m_pImpl->m_s_sound.setTexture(m_pImpl->m_t_soundOff);
+					}
+					else
+					{
+						m_pImpl->m_sound = true;
+						m_pImpl->m_s_sound.setTexture(m_pImpl->m_t_soundOn);
+					}
+				}
+			}
+		}		
+		if (!sf::IntRect(shape.getGlobalBounds()).contains(sf::Mouse::getPosition(m_window)))
+		{
+			if (m_event.type == sf::Event::MouseButtonReleased)
+			{
+				if (m_event.key.code == sf::Mouse::Left)
+				{
+					DrawGame();
+					return false;
+				}
+			}
+		}
+
+		m_window.draw(m_pImpl->m_s_board);
+		m_window.draw(*m_pImpl->m_playerOne);
+		m_window.draw(*m_pImpl->m_playerTwo);
+
+		m_window.draw(shape);
+		m_window.draw(toMenu);
+		m_window.draw(exit);
+		m_window.draw(m_pImpl->m_s_sound);
+		m_window.display();
+	}
 }
 
 void Game::DrawPossibleMoves(const std::vector<sf::Vector2i>& pos, const bool& canMove, const char& player)
@@ -415,6 +519,12 @@ void Game::OnePC()
 					return;
 				}
 			}
+			if (m_pImpl->m_returnToMainMenu)
+			{
+				m_pImpl->m_returnToMainMenu = false;
+				SetStartedBoard();
+				return;
+			}
 			while (m_pImpl->m_playerTwo->MakeMove())
 			{
 				if (!m_pImpl->m_playerOne->EatChecker())
@@ -429,7 +539,13 @@ void Game::OnePC()
 					AnnounceWinner('w');
 					return;
 				}
-			}				
+			}			
+			if (m_pImpl->m_returnToMainMenu)
+			{
+				m_pImpl->m_returnToMainMenu = false;
+				SetStartedBoard();
+				return;
+			}
 		}
 		else  //'S'
 		{
@@ -448,6 +564,12 @@ void Game::OnePC()
 					return;
 				}
 			}
+			if (m_pImpl->m_returnToMainMenu)
+			{
+				m_pImpl->m_returnToMainMenu = false;
+				SetStartedBoard();
+				return;
+			}
 			while (m_pImpl->m_playerOne->MakeMove())
 			{
 				if (!m_pImpl->m_playerTwo->EatChecker())
@@ -462,6 +584,12 @@ void Game::OnePC()
 					AnnounceWinner('b');
 					return;
 				}
+			}
+			if (m_pImpl->m_returnToMainMenu)
+			{
+				m_pImpl->m_returnToMainMenu = false;
+				SetStartedBoard();
+				return;
 			}
 		}
 

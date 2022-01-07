@@ -9,6 +9,7 @@ protected:
 	std::vector<Checker> m_checkers;
 	std::vector<int> m_canBeatN;
 	int m_NbeatChecker;
+	bool queened;
 
 	void draw(sf::RenderTarget& target, sf::RenderStates states) const;
 public:

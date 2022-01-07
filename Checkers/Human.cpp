@@ -40,7 +40,10 @@ bool Human::MakeMove()
 			if (game->m_event.type == sf::Event::KeyReleased)
 			{
 				if (game->m_event.key.code == sf::Keyboard::Escape)
-					game->DrawMenu();
+				{
+					if (game->DrawMenu())
+						return false;
+				}
 			}
 			if (game->m_event.type == sf::Event::MouseButtonPressed)
 			{
@@ -78,7 +81,7 @@ bool Human::MakeMove()
 							}
 						}
 						game->DrawGame();
-						std::pair<bool, bool> moveRes = m_checkers[nChecker].Move(sf::Vector2f(pos.x, pos.y), canMove);
+						std::pair<bool, bool> moveRes = m_checkers[nChecker].Move(sf::Vector2f(pos.x, pos.y), canMove, queened);
 						if (moveRes.first)
 						{
 							m_NbeatChecker = nChecker;

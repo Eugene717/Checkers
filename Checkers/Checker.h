@@ -27,14 +27,14 @@ class Checker :public sf::Drawable
 	static void LoadFiles();
 
 	void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
-	void CheckQueen();
+	bool CheckQueen();
 public:
 	Checker(sf::Vector2i&& pos, char color) noexcept;
 	~Checker();
 	sf::FloatRect getGlobalBounds() const;
 	void setPosition(const float& x, const float& y);
 	sf::Vector2i GetPosition() const;
-	std::pair<bool, bool> Move(const sf::Vector2f& posGraphic,const bool& canMoves);
+	std::pair<bool, bool> Move(const sf::Vector2f& posGraphic,const bool& canMoves, bool& queened);
 	std::vector<sf::Vector2i> CanMove(bool* canBeat = nullptr) const;
 	bool Alived() const;
 };

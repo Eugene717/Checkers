@@ -82,7 +82,7 @@ sf::Vector2i Checker::GetPosition() const
 	return m_pos;
 }	
 
-std::pair<bool, bool> Checker::Move(const sf::Vector2f& posGraphic,const bool& canMoves)
+std::pair<bool, bool> Checker::Move(const sf::Vector2f& posGraphic,const bool& canMoves, bool& queened)
 {
 	Game* game = Game::GetInstance();
 	std::vector<sf::Vector2i> canMove = CanMove();
@@ -117,21 +117,25 @@ std::pair<bool, bool> Checker::Move(const sf::Vector2f& posGraphic,const bool& c
 					{
 						if (game->m_board[vert][hor] != '\0')
 						{
-							m_takeBeatChecker.play();
+							if (game->GetSound())
+								m_takeBeatChecker.play();
 							game->m_board[vert][hor] = '\0';	
 							beated = true;
 						}
 					}
 
-					if (!beated)
+					if (game->GetSound())
 					{
-						if (m_queen)
-							m_longMove.play();
-						else
-							m_fastMove.play();
+						if (!beated)
+						{
+							if (m_queen)
+								m_longMove.play();
+							else
+								m_fastMove.play();
+						}
 					}
 
-					CheckQueen();					
+					queened = CheckQueen();					
 					
 					return std::make_pair<bool, bool>(true, std::move(beated));
 				}
@@ -482,19 +486,26 @@ bool Checker::Alived() const
 	}
 }
 
-void Checker::CheckQueen()
+bool Checker::CheckQueen()
 {
 	if (!m_queen)
 	{
 		if (m_color == 'b')
 		{
 			if (m_pos.x == 7)
+			{
 				m_queen = true;
+				return true;
+			}
 		}
 		else if (m_color == 'w')
 		{
 			if (m_pos.x == 0)
+			{
 				m_queen = true;
+				return true;
+			}
 		}
 	}
+	return false;
 }
