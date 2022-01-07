@@ -235,6 +235,14 @@ bool Game::DrawMenu()
 		{
 			if (m_event.type == sf::Event::Closed)
 				m_window.close();
+			if (m_event.type == sf::Event::KeyReleased)
+			{
+				if (m_event.key.code == sf::Keyboard::Escape)
+				{
+					DrawGame();
+					return false;
+				}
+			}
 		}
 
 		pos = m_window.mapPixelToCoords(sf::Mouse::getPosition(m_window));
