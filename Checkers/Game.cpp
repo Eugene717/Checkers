@@ -11,6 +11,10 @@ struct GameIMPL
 	sf::Font m_font;
 	sf::Texture m_t_board;
 	sf::Sprite m_s_board;
+	sf::Texture m_t_soundOn;
+	sf::Sprite m_s_soundOn;
+	sf::Texture m_t_soundOff;
+	sf::Sprite m_s_soundOff;
 	Player* m_playerOne;
 	Player* m_playerTwo;
 	std::default_random_engine m_random;
@@ -23,8 +27,15 @@ GameIMPL::GameIMPL()
 	m_font.loadFromFile("arial.ttf");
 	m_t_board.loadFromFile("images/board.png");
 	m_s_board.setTexture(m_t_board); 
+	m_t_soundOn.loadFromFile("images/sound_on.png");	
+	m_s_soundOn.setTexture(m_t_soundOn); 
+	m_t_soundOff.loadFromFile("images/sound_off.png");	
+	m_s_soundOff.setTexture(m_t_soundOff); 
+
 	std::random_device rd;
 	m_random.seed(rd());
+	m_playerOne = nullptr;
+	m_playerTwo = nullptr;
 }
 
 Game::Game()
@@ -174,6 +185,33 @@ void Game::DrawGame()
 	m_window.draw(m_pImpl->m_s_board);
 	m_window.draw(*m_pImpl->m_playerOne);
 	m_window.draw(*m_pImpl->m_playerTwo);
+	m_window.display();
+}
+
+void Game::DrawMenu()
+{
+	float centerPos = m_window.getSize().x / 2;
+
+	sf::RectangleShape shape;
+	shape.setFillColor(sf::Color::White);
+	shape.setOutlineColor(sf::Color::Black);
+	shape.setOutlineThickness(2);
+	shape.setSize(sf::Vector2f(300, 150));
+	shape.setOrigin(150, 75);
+	shape.setPosition(m_window.getSize().x / 2, m_window.getSize().y / 2);
+
+	sf::Text toMenu("Exit to menu", m_pImpl->m_font);
+	toMenu.setCharacterSize(40);
+	toMenu.setFillColor(sf::Color::Black);
+	toMenu.setPosition(centerPos - toMenu.getGlobalBounds().width / 2, shape.getGlobalBounds().top);
+	sf::Text exit("Exit", m_pImpl->m_font);
+	exit.setFillColor(sf::Color::Black);
+	exit.setCharacterSize(40);
+	exit.setPosition(centerPos - exit.getGlobalBounds().width / 2, toMenu.getPosition().y + 70);
+
+	m_window.draw(shape);
+	m_window.draw(toMenu);
+	m_window.draw(exit);
 	m_window.display();
 }
 

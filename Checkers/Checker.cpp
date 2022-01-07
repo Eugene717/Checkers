@@ -2,24 +2,36 @@
 #include "Game.h"
 #include <iostream>
 
-bool Checker::m_setTexture = false;
+int Checker::NCheckers = 0;
 sf::Texture Checker::m_whiteTexture;
 sf::Texture Checker::m_blackTexture;
 sf::Texture Checker::m_queenTexture;
-void Checker::setTextures()
+sf::SoundBuffer Checker::m_fastMoveBuf;
+sf::Sound Checker::m_fastMove;
+sf::SoundBuffer Checker::m_longMoveBuf;
+sf::Sound Checker::m_longMove;
+sf::SoundBuffer Checker::m_takeBeatCheckerBuf;
+sf::Sound Checker::m_takeBeatChecker;
+void Checker::LoadFiles()
 {
-	if (m_setTexture == false)
+	if (NCheckers == 0)
 	{
 		m_whiteTexture.loadFromFile("images/white.png");
 		m_blackTexture.loadFromFile("images/black.png");
 		m_queenTexture.loadFromFile("images/queen.png");
-		m_setTexture = true;
+		m_fastMoveBuf.loadFromFile("sounds/fast_move.wav");
+		m_fastMove.setBuffer(m_fastMoveBuf);
+		m_longMoveBuf.loadFromFile("sounds/long_move.wav");
+		m_longMove.setBuffer(m_longMoveBuf);
+		m_takeBeatCheckerBuf.loadFromFile("sounds/take_beat_checker.wav");
+		m_takeBeatChecker.setBuffer(m_takeBeatCheckerBuf);
 	}
 }
 
 Checker::Checker(sf::Vector2i&& pos, char color) noexcept : m_color(color), m_pos(std::move(pos)), m_queen(false)
 {
-	setTextures();
+	LoadFiles();
+	NCheckers++;
 
 	m_posGraphic.x = m_pos.y * 56 + 56;
 	m_posGraphic.y = m_pos.x * 56 + 56;	
@@ -35,6 +47,16 @@ Checker::Checker(sf::Vector2i&& pos, char color) noexcept : m_color(color), m_po
 
 	m_sprite.setPosition(m_posGraphic);
 	m_queenSprite.setPosition(m_posGraphic);
+}
+
+Checker::~Checker()
+{
+	if (NCheckers == 0)
+	{
+		m_whiteTexture.~Texture();
+		m_blackTexture.~Texture();
+		m_queenTexture.~Texture();
+	}
 }
 
 void Checker::draw(sf::RenderTarget& target, sf::RenderStates states) const
@@ -88,16 +110,30 @@ std::pair<bool, bool> Checker::Move(const sf::Vector2f& posGraphic,const bool& c
 					else if (m_pos.y <= i.y - 2)
 						hor = i.y - 1;
 
-					m_pos = i;
-					CheckQueen();
+					m_pos = i; 
 
+					bool beated = false;
 					if (hor != -1 && vert != -1)
 					{
-						game->m_board[vert][hor] = '\0';
-						return std::make_pair<bool, bool>(true, true);
+						if (game->m_board[vert][hor] != '\0')
+						{
+							m_takeBeatChecker.play();
+							game->m_board[vert][hor] = '\0';	
+							beated = true;
+						}
 					}
-									
-					return std::make_pair<bool, bool>(true, false);
+
+					if (!beated)
+					{
+						if (m_queen)
+							m_longMove.play();
+						else
+							m_fastMove.play();
+					}
+
+					CheckQueen();					
+					
+					return std::make_pair<bool, bool>(true, std::move(beated));
 				}
 			}
 		}
@@ -356,11 +392,7 @@ std::vector<sf::Vector2i> Checker::CanMove(bool* canBeat) const
 				}
 			}
 			if (pos.empty())  //если не может бить, можем ходить
-			{/*
-				if (*canBeat == false)
-				{
-
-				}*/
+			{
 				if (m_pos.x > 0 && m_pos.y > 0)
 					if (game->m_board[m_pos.x - 1][m_pos.y - 1] == '\0')
 					{
@@ -440,9 +472,14 @@ bool Checker::Alived() const
 {
 	Game* game = Game::GetInstance();
 	if (game->m_board[m_pos.x][m_pos.y] == m_color)
+	{
 		return true;
-	else 
+	}
+	else
+	{
+		NCheckers--;
 		return false;
+	}
 }
 
 void Checker::CheckQueen()

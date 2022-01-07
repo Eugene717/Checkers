@@ -29,13 +29,19 @@ bool Human::MakeMove()
 		pos = game->m_window.mapPixelToCoords(sf::Mouse::getPosition(game->m_window));
 
 		if (CanBeat() && !isMove)
+		{
 			game->DrawPossibleBlows(GetCanBeatNPos());
+		}
 
 		if (game->m_window.pollEvent(game->m_event))
 		{
 			if (game->m_event.type == sf::Event::Closed)
 				game->m_window.close();
-
+			if (game->m_event.type == sf::Event::KeyReleased)
+			{
+				if (game->m_event.key.code == sf::Keyboard::Escape)
+					game->DrawMenu();
+			}
 			if (game->m_event.type == sf::Event::MouseButtonPressed)
 			{
 				if (game->m_event.mouseButton.button == sf::Mouse::Left)
