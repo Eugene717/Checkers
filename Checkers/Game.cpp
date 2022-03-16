@@ -129,6 +129,14 @@ int Game::MainMenu()
 				if (m_event.key.code == sf::Keyboard::Escape)
 					m_window.close();
 			}
+			if (m_event.type == sf::Event::MouseButtonReleased)
+			{
+				if (m_event.key.code == sf::Mouse::Left)
+				{
+					m_window.clear(sf::Color::White);
+					return menuNum;
+				}
+			}
 		}
 
 		menuNum = 0;
@@ -164,15 +172,6 @@ int Game::MainMenu()
 		{
 			exit.setFillColor(sf::Color::Blue);
 			menuNum = 5;
-		}
-
-		if (m_event.type == sf::Event::MouseButtonReleased)
-		{
-			if (m_event.key.code == sf::Mouse::Left)
-			{
-				m_window.clear(sf::Color::White);
-				return menuNum;
-			}
 		}
 
 		m_window.clear(sf::Color::White);
@@ -241,6 +240,22 @@ bool Game::DrawMenu()
 				{
 					DrawGame();
 					return false;
+				}			
+			}
+			if (m_event.type == sf::Event::MouseButtonReleased && m_event.key.code == sf::Mouse::Left)
+			{
+				if (sf::IntRect(m_pImpl->m_s_sound.getGlobalBounds()).contains(sf::Mouse::getPosition(m_window)))
+				{
+					if (m_pImpl->m_sound)
+					{
+						m_pImpl->m_sound = false;
+						m_pImpl->m_s_sound.setTexture(m_pImpl->m_t_soundOff);
+					}
+					else
+					{
+						m_pImpl->m_sound = true;
+						m_pImpl->m_s_sound.setTexture(m_pImpl->m_t_soundOn);
+					}
 				}
 			}
 		}
@@ -286,22 +301,7 @@ bool Game::DrawMenu()
 		if (sf::IntRect(m_pImpl->m_s_sound.getGlobalBounds()).contains(sf::Mouse::getPosition(m_window)))
 		{
 			m_pImpl->m_s_sound.setScale(1.15, 1.15);
-			if (m_event.type == sf::Event::MouseButtonReleased)
-			{
-				if (m_event.key.code == sf::Mouse::Left)
-				{
-					if (m_pImpl->m_sound)
-					{
-						m_pImpl->m_sound = false;
-						m_pImpl->m_s_sound.setTexture(m_pImpl->m_t_soundOff);
-					}
-					else
-					{
-						m_pImpl->m_sound = true;
-						m_pImpl->m_s_sound.setTexture(m_pImpl->m_t_soundOn);
-					}
-				}
-			}
+			
 		}		
 		if (!sf::IntRect(shape.getGlobalBounds()).contains(sf::Mouse::getPosition(m_window)))
 		{
@@ -604,7 +604,115 @@ void Game::OnePC()
 	}
 }
 
+std::string Game::EnterName()
+{
+	sf::Vector2f centerPos = sf::Vector2f(m_window.getSize().x / 2, m_window.getSize().y / 2 - 100);
+
+	sf::Text enter("Enter your name", m_pImpl->m_font);
+	enter.setFillColor(sf::Color::Black);
+	enter.setCharacterSize(30);
+	enter.setPosition(centerPos.x - enter.getGlobalBounds().width / 2, centerPos.y - enter.getGlobalBounds().height);
+
+	sf::Text back("Back", m_pImpl->m_font);
+	back.setFillColor(sf::Color::Black);
+	back.setCharacterSize(24);
+	back.setPosition(35 - back.getGlobalBounds().width / 2, 475 - back.getGlobalBounds().height);
+
+	sf::RectangleShape shape;
+	shape.setFillColor(sf::Color::White);
+	shape.setOutlineColor(sf::Color::Black);
+	shape.setOutlineThickness(2);
+	shape.setSize(sf::Vector2f(300, 50));
+	shape.setOrigin(150, 75);
+	shape.setPosition(m_window.getSize().x / 2, m_window.getSize().y / 2);
+
+	sf::Texture t_next;
+	t_next.loadFromFile("images/next.png");
+	sf::Sprite s_next;
+	s_next.setTexture(t_next);
+	s_next.setOrigin(15, 15);
+	s_next.setPosition(m_window.getSize().x / 2 + 175, m_window.getSize().y / 2 - 50);
+
+	std::string str;
+	sf::Text name("", m_pImpl->m_font, 28);
+	name.setFillColor(sf::Color::Black);
+	name.setPosition(centerPos.x - 145, centerPos.y + 30);
+
+	bool isPassEnter = true;
+
+	while (m_window.isOpen())
+	{
+		while (m_window.pollEvent(m_event))
+		{
+			if (m_event.type == sf::Event::Closed)
+				m_window.close();
+			if (m_event.type == sf::Event::KeyPressed)
+			{
+				if (m_event.key.code == sf::Keyboard::Escape)
+					m_window.close();
+			}
+			if (m_event.type == sf::Event::MouseButtonReleased && m_event.key.code == sf::Mouse::Left)
+			{
+				if (sf::IntRect(s_next.getGlobalBounds()).contains(sf::Mouse::getPosition(m_window)))
+				{
+					return str;
+				}
+				if (sf::IntRect(back.getGlobalBounds()).contains(sf::Mouse::getPosition(m_window)))
+				{
+					m_window.clear(sf::Color::White);
+					return "\0";
+				}
+				if (sf::IntRect(shape.getGlobalBounds()).contains(sf::Mouse::getPosition(m_window)))
+					isPassEnter = true;
+				else
+					isPassEnter = false;
+			}
+			if (m_event.type == sf::Event::TextEntered && isPassEnter)
+			{
+				if (m_event.text.unicode == '\b')
+				{
+					if (str.size() > 0)
+					{
+						str.pop_back();
+						name.setString(str);
+					}
+				}
+				else if (m_event.text.unicode < 128)
+				{
+					if (str.size() < 20)
+					{
+						str += static_cast<char>(m_event.text.unicode);
+						name.setString(str);
+					}
+				}
+			}
+		}
+
+		s_next.setScale(1, 1);
+		back.setFillColor(sf::Color::Black);
+		if (sf::IntRect(s_next.getGlobalBounds()).contains(sf::Mouse::getPosition(m_window)))
+		{
+			s_next.setScale(1.10, 1.10);
+		}
+		if (sf::IntRect(s_next.getGlobalBounds()).contains(sf::Mouse::getPosition(m_window)))
+		{
+			back.setFillColor(sf::Color::Blue);
+		}
+
+		m_window.clear(sf::Color::White);
+		m_window.draw(enter);
+		m_window.draw(back);
+		m_window.draw(shape);
+		m_window.draw(name);
+		m_window.draw(s_next);
+		m_window.display();
+	}
+}
+
 void Game::Multiplayer()
 {
+	std::string name = EnterName();
+	if (name == "\0")
+		return;
 
 }

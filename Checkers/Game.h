@@ -19,6 +19,7 @@ class Game
 	char FirstTurn() const;
 	void SetStartedBoard();
 	void AnnounceWinner(const char& color);
+	std::string EnterName();
 public:
 	char m_board[8][8];
 
@@ -29,6 +30,7 @@ public:
 
 	bool GetSound() const;
 	int MainMenu();
+	//void DrawSettingsMenu();
 	void DrawGame();
 	void DrawPossibleMoves(const std::vector<sf::Vector2i>& pos, const bool& canMove, const char& player);
 	void DrawPossibleBlows(const std::vector<sf::Vector2i>& pos);

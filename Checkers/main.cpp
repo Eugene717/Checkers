@@ -32,7 +32,8 @@ int main()
 			game->OnePC();
 			break;
 		case 3:
-			//std::cout << "Не работает блять, хули клацаешь?\n";
+			game->m_window.clear(sf::Color::White);
+			game->Multiplayer();
 			break;
 		case 4:
 			//std::cout << "Не работает блять, хули клацаешь?\n";
