@@ -4,6 +4,19 @@
 Human::Human(char&& color) :Player(std::move(color))
 { }
 
+void Human::draw(sf::RenderTarget& target, sf::RenderStates states) const
+{
+	Game* game = Game::GetInstance();
+
+	for (auto i : m_checkers)
+	{
+		if (m_p_moved_checker != &i)
+			game->m_window.draw(i);
+	}
+	if (m_p_moved_checker != nullptr)
+		game->m_window.draw(*m_p_moved_checker);
+}
+
 std::vector<sf::Vector2i> Human::GetCanBeatNPos() const
 {
 	std::vector<sf::Vector2i> pos;
@@ -57,6 +70,7 @@ bool Human::MakeMove()
 							{
 								isMove = true;
 								nChecker = i;
+								m_p_moved_checker = &m_checkers[i];
 							}
 						}
 					}
@@ -76,6 +90,7 @@ bool Human::MakeMove()
 								if (!std::binary_search(m_canBeatN.begin(), m_canBeatN.end(), nChecker))
 								{
 									canMove = false;
+									m_p_moved_checker = nullptr;
 									break;
 								}
 							}
@@ -86,6 +101,7 @@ bool Human::MakeMove()
 						{
 							m_NbeatChecker = nChecker;
 							game->DrawGame();
+							m_p_moved_checker = nullptr;
 							return moveRes.second;
 						}
 						game->DrawGame();
@@ -105,6 +121,7 @@ bool Human::MakeMove()
 					if (!std::binary_search(m_canBeatN.begin(),m_canBeatN.end(), nChecker))
 					{
 						canMove = false;
+						m_p_moved_checker = nullptr;
 						break;
 					}
 				}

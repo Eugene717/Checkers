@@ -11,7 +11,7 @@ protected:
 	int m_NbeatChecker;
 	bool queened;
 
-	void draw(sf::RenderTarget& target, sf::RenderStates states) const;
+	virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const;
 public:
 	Player(char&& color);
 	~Player();
