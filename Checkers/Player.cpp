@@ -39,7 +39,11 @@ bool Player::EatChecker()
 	m_checkers.erase(std::remove_if(m_checkers.begin(), m_checkers.end(), [&](Checker& i) { if (i.Alived()) return false; else return true; }), m_checkers.end());
 
 	if (m_checkers.empty())
+	{
+		Game* game = Game::GetInstance();
+		game->m_dataPacket.m_finishGame = true;
 		return true;
+	}
 	else
 		return false;
 }

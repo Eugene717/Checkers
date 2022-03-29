@@ -96,7 +96,15 @@ bool Human::MakeMove()
 							}
 						}
 						game->DrawGame();
+
+						game->m_dataPacket.m_starterPos.first = m_checkers[nChecker].GetPosition().x;
+						game->m_dataPacket.m_starterPos.second = m_checkers[nChecker].GetPosition().y;
+
 						std::pair<bool, bool> moveRes = m_checkers[nChecker].Move(sf::Vector2f(pos.x, pos.y), canMove, queened);
+
+						game->m_dataPacket.m_finishPos.first = m_checkers[nChecker].GetPosition().x;
+						game->m_dataPacket.m_finishPos.second = m_checkers[nChecker].GetPosition().y;
+
 						if (moveRes.first)
 						{
 							m_NbeatChecker = nChecker;
@@ -126,7 +134,28 @@ bool Human::MakeMove()
 					}
 				}
 			}
-			game->DrawPossibleMoves(m_checkers[nChecker].CanMove(), canMove, GetColor());
+			game->DrawPossibleMoves(m_checkers[nChecker].CanMove(), canMove, GetColor(), true);
 		}
 	}
+}
+
+bool Human::MoveMP()
+{
+	Game* game = Game::GetInstance();
+	
+	int nChecker = -1;
+
+	for (int i = 0; i < m_checkers.size(); i++)
+	{
+		if (m_checkers[i] == game->m_dataPacket.m_starterPos)
+		{
+			m_NbeatChecker = i;
+			return m_checkers[i].Move(sf::Vector2f(game->m_dataPacket.m_finishPos.second * 56 + 29, game->m_dataPacket.m_finishPos.first * 56 +29), true, queened).second;
+		}
+	}
+
+	//Checker* movedChecker = &(*std::find(m_checkers.begin(), m_checkers.end(), game->m_dataPacket.m_starterPos));
+	//bool beated = movedChecker->Move(sf::Vector2f(movedChecker->getGlobalBounds().left, movedChecker->getGlobalBounds().top), true, queened).second;
+
+	//return beated;
 }

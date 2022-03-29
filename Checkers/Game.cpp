@@ -2,7 +2,7 @@
 #include "Player.h"
 #include "Human.h"
 #include "AI.h"
-#include <random>
+#include <iostream>
 
 Game* Game::m_game = nullptr;
 
@@ -18,7 +18,6 @@ struct GameIMPL
 	sf::Sprite m_s_sound;
 	Player* m_playerOne;
 	Player* m_playerTwo;
-	std::default_random_engine m_random;
 
 	GameIMPL();
 };
@@ -33,8 +32,6 @@ GameIMPL::GameIMPL()
 	m_sound = true;
 	m_returnToMainMenu = false;
 	
-	std::random_device rd;
-	m_random.seed(rd());
 	m_playerOne = nullptr;
 	m_playerTwo = nullptr;
 }
@@ -63,14 +60,6 @@ Game::~Game()
 bool Game::GetSound() const
 {
 	return m_pImpl->m_sound;
-}
-
-char Game::FirstTurn() const
-{
-	if (m_pImpl->m_random() % 2 == 0)
-		return 'F';
-	else
-		return 'S';
 }
 
 void Game::SetStartedBoard()
@@ -327,7 +316,7 @@ bool Game::DrawMenu()
 	}
 }
 
-void Game::DrawPossibleMoves(const std::vector<sf::Vector2i>& pos, const bool& canMove, const char& player)
+void Game::DrawPossibleMoves(const std::vector<sf::Vector2i>& pos, const bool& canMove, const char& player, const bool MP = false)
 {
 	sf::RectangleShape shape;
 	shape.setFillColor(sf::Color(255, 255, 0, 0));
@@ -346,15 +335,15 @@ void Game::DrawPossibleMoves(const std::vector<sf::Vector2i>& pos, const bool& c
 		}
 	}
 
-	if (player == 'w')
+	if (player == 'w' || MP)
 	{
-		m_window.draw(*m_pImpl->m_playerOne);
 		m_window.draw(*m_pImpl->m_playerTwo);
+		m_window.draw(*m_pImpl->m_playerOne);
 	}
 	else
 	{
-		m_window.draw(*m_pImpl->m_playerTwo);
 		m_window.draw(*m_pImpl->m_playerOne);
+		m_window.draw(*m_pImpl->m_playerTwo);
 	}
 	m_window.display();
 }
@@ -495,10 +484,8 @@ void Game::SinglePlayer()
 
 void Game::OnePC()
 {
-	m_pImpl->m_playerOne = new Human('b');
-	m_pImpl->m_playerTwo = new Human('w');
-
-	char turn = FirstTurn();
+	m_pImpl->m_playerOne = new Human('w');
+	m_pImpl->m_playerTwo = new Human('b');
 
 	while (m_window.isOpen())
 	{
@@ -510,95 +497,47 @@ void Game::OnePC()
 
 		DrawGame();
 
-		if (turn == 'F')
+		while (m_pImpl->m_playerOne->MakeMove())
 		{
-			while (m_pImpl->m_playerOne->MakeMove())
+			if (!m_pImpl->m_playerTwo->EatChecker())
 			{
-				if (!m_pImpl->m_playerTwo->EatChecker())
-				{
-					DrawGame();
-					if (!m_pImpl->m_playerOne->CanBeatAgain())
-						break;
-				}
-				else
-				{
-					DrawGame();
-					AnnounceWinner('b');
-					return;
-				}
+				DrawGame();
+				if (!m_pImpl->m_playerOne->CanBeatAgain())
+					break;
 			}
-			if (m_pImpl->m_returnToMainMenu)
+			else
 			{
-				m_pImpl->m_returnToMainMenu = false;
-				SetStartedBoard();
-				return;
-			}
-			while (m_pImpl->m_playerTwo->MakeMove())
-			{
-				if (!m_pImpl->m_playerOne->EatChecker())
-				{
-					DrawGame();
-					if (!m_pImpl->m_playerTwo->CanBeatAgain())
-						break;
-				}
-				else
-				{
-					DrawGame();
-					AnnounceWinner('w');
-					return;
-				}
-			}			
-			if (m_pImpl->m_returnToMainMenu)
-			{
-				m_pImpl->m_returnToMainMenu = false;
-				SetStartedBoard();
+				DrawGame();
+				AnnounceWinner('w');
 				return;
 			}
 		}
-		else  //'S'
+		if (m_pImpl->m_returnToMainMenu)
 		{
-			while (m_pImpl->m_playerTwo->MakeMove())
+			m_pImpl->m_returnToMainMenu = false;
+			SetStartedBoard();
+			return;
+		}
+		while (m_pImpl->m_playerTwo->MakeMove())
+		{
+			if (!m_pImpl->m_playerOne->EatChecker())
 			{
-				if (!m_pImpl->m_playerOne->EatChecker())
-				{
-					DrawGame();
-					if (!m_pImpl->m_playerTwo->CanBeatAgain())
-						break;
-				}
-				else
-				{
-					DrawGame();
-					AnnounceWinner('w');
-					return;
-				}
+				DrawGame();
+				if (!m_pImpl->m_playerTwo->CanBeatAgain())
+					break;
 			}
-			if (m_pImpl->m_returnToMainMenu)
+			else
 			{
-				m_pImpl->m_returnToMainMenu = false;
-				SetStartedBoard();
+				DrawGame();
+				AnnounceWinner('b');
 				return;
 			}
-			while (m_pImpl->m_playerOne->MakeMove())
-			{
-				if (!m_pImpl->m_playerTwo->EatChecker())
-				{
-					DrawGame();
-					if (!m_pImpl->m_playerOne->CanBeatAgain())
-						break;
-				}
-				else
-				{
-					DrawGame();
-					AnnounceWinner('b');
-					return;
-				}
-			}
-			if (m_pImpl->m_returnToMainMenu)
-			{
-				m_pImpl->m_returnToMainMenu = false;
-				SetStartedBoard();
-				return;
-			}
+		}
+		if (m_pImpl->m_returnToMainMenu)
+		{
+			m_pImpl->m_returnToMainMenu = false;
+			SetStartedBoard();
+			return;
 		}
 
 	}
@@ -655,7 +594,8 @@ std::string Game::EnterName()
 			{
 				if (sf::IntRect(s_next.getGlobalBounds()).contains(sf::Mouse::getPosition(m_window)))
 				{
-					return str;
+					if (str.size() > 0)
+						return str;
 				}
 				if (sf::IntRect(back.getGlobalBounds()).contains(sf::Mouse::getPosition(m_window)))
 				{
@@ -694,7 +634,7 @@ std::string Game::EnterName()
 		{
 			s_next.setScale(1.10, 1.10);
 		}
-		if (sf::IntRect(s_next.getGlobalBounds()).contains(sf::Mouse::getPosition(m_window)))
+		if (sf::IntRect(back.getGlobalBounds()).contains(sf::Mouse::getPosition(m_window)))
 		{
 			back.setFillColor(sf::Color::Blue);
 		}
@@ -709,10 +649,141 @@ std::string Game::EnterName()
 	}
 }
 
+char Game::SearchGame(sf::TcpSocket& socket)
+{
+	std::string turn;
+
+
+
+	return turn[0];
+}
+
 void Game::Multiplayer()
 {
-	std::string name = EnterName();
-	if (name == "\0")
+	std::string myName = EnterName();
+	if (myName == "\0")
 		return;
+	sf::Packet packet;
 
+	sf::TcpSocket socket;
+	socket.connect("localhost", 55055);
+
+	std::string turn;
+	if (socket.receive(packet) == sf::Socket::Done)
+	{
+		packet >> turn;
+		packet.clear();
+	}
+
+	packet << myName;
+	socket.send(packet);
+	packet.clear();
+
+	std::string enemyName;
+	if (socket.receive(packet) == sf::Socket::Done)
+	{
+		packet >> enemyName;
+		packet.clear();
+	}
+
+	socket.setBlocking(false);
+
+	if (turn == "f")
+	{
+		m_pImpl->m_playerOne = new Human('w');
+		m_pImpl->m_playerTwo = new Human('b');
+	}
+	else
+	{
+		m_pImpl->m_playerOne = new Human('b');
+		m_pImpl->m_playerTwo = new Human('w');
+	}
+
+	while (m_window.isOpen())
+	{
+		if (m_window.pollEvent(m_event))
+		{
+			if (m_event.type == sf::Event::Closed)
+				m_window.close();
+			if (m_event.type == sf::Event::KeyReleased)
+			{
+				if (m_event.key.code == sf::Keyboard::Escape)
+				{
+					if (DrawMenu())
+					{
+						socket.disconnect();
+						return;
+					}
+				}
+			}
+		}
+
+		DrawGame();
+
+		if (turn == "f")
+		{
+			while (m_pImpl->m_playerOne->MakeMove())
+			{
+				if (!m_pImpl->m_playerTwo->EatChecker())
+				{
+					DrawGame();
+
+					if (!m_pImpl->m_playerOne->CanBeatAgain())
+						break;
+					else
+					{
+						packet << m_dataPacket;
+						socket.send(packet);
+						packet.clear();
+					}
+				}
+				else
+				{
+					DrawGame();
+
+					packet << m_dataPacket;
+					socket.send(packet);
+					packet.clear();
+					socket.disconnect();
+
+					AnnounceWinner(m_pImpl->m_playerOne->GetColor());
+					return;
+				}
+			}
+
+			packet << m_dataPacket;
+			socket.send(packet);
+			packet.clear();
+
+			turn = "s";
+		}
+		else
+		{
+			if (socket.receive(packet) == sf::Socket::Done)
+			{
+				packet >> m_dataPacket;	
+				packet.clear();
+
+				if (static_cast<Human*>(m_pImpl->m_playerTwo)->MoveMP())
+				{
+					if (!m_pImpl->m_playerOne->EatChecker())
+					{
+						DrawGame();
+
+						if (!m_pImpl->m_playerTwo->CanBeatAgain())
+							turn = "f";
+					}
+					else
+					{
+						DrawGame();
+						socket.disconnect();
+						AnnounceWinner(m_pImpl->m_playerTwo->GetColor());
+						return;
+					}
+				}
+				else
+					turn = "f";
+			}
+		}
+	}
 }

@@ -59,6 +59,20 @@ Checker::~Checker()
 	}
 }
 
+bool Checker::operator==(const std::pair<int, int>& other)
+{
+	return m_pos.x == other.first && m_pos.y == other.second;
+}
+
+void Checker::replace(const std::pair<int, int>& pos)
+{
+	m_pos.x = pos.first;
+	m_pos.y = pos.second;
+
+	m_posGraphic.x = m_pos.y * 56 + 56;
+	m_posGraphic.y = m_pos.x * 56 + 56;
+}
+
 void Checker::draw(sf::RenderTarget& target, sf::RenderStates states) const
 {
 	target.draw(m_sprite);
@@ -319,6 +333,8 @@ std::vector<sf::Vector2i> Checker::CanMove(bool* canBeat) const
 				{
 					pos.push_back(sf::Vector2i(i, j));
 				}
+				else
+					break;
 			}
 			for (int i = m_pos.x + 1, j = m_pos.y - 1; i < 8 && j >= 0; i++, j--)  //вниз-влево
 			{
@@ -328,6 +344,8 @@ std::vector<sf::Vector2i> Checker::CanMove(bool* canBeat) const
 				{
 					pos.push_back(sf::Vector2i(i, j));
 				}
+				else
+					break;
 			}
 			for (int i = m_pos.x - 1, j = m_pos.y + 1; i >= 0 && j < 8; i--, j++)  //вверх-вправо
 			{
@@ -337,6 +355,8 @@ std::vector<sf::Vector2i> Checker::CanMove(bool* canBeat) const
 				{
 					pos.push_back(sf::Vector2i(i, j));
 				}
+				else
+					break;
 			}
 			for (int i = m_pos.x - 1, j = m_pos.y - 1; i >= 0 && j >= 0; i--, j--)  //вверх-влево
 			{
@@ -346,6 +366,8 @@ std::vector<sf::Vector2i> Checker::CanMove(bool* canBeat) const
 				{
 					pos.push_back(sf::Vector2i(i, j));
 				}
+				else
+					break;
 			}
 		}
 	}

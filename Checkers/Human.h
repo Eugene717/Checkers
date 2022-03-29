@@ -11,5 +11,6 @@ protected:
 public:
     Human(char&& color);
     bool MakeMove() override;
+    bool MoveMP();
 };
 
