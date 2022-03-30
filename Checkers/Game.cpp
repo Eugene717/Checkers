@@ -370,7 +370,7 @@ void Game::DrawPossibleBlows(const std::vector<sf::Vector2i>& pos)
 	m_window.display();
 }
 
-void Game::AnnounceWinner(const char& color)
+void Game::AnnounceWinner(const char& color, const std::string name = "\0")
 {
 	sf::sleep(sf::seconds(1));
 	sf::Vector2f centerPos = sf::Vector2f(m_window.getSize().x / 2, m_window.getSize().y / 2);
@@ -380,16 +380,22 @@ void Game::AnnounceWinner(const char& color)
 	announce.setCharacterSize(30);
 	announce.setStyle(sf::Text::Style::Bold);
 
-	if (color == 'w')
+	if (name != "\0")
+	{
+		std::string sColor;
+		color == 'w' ? sColor = " (white) " : sColor = " (black) ";
+		announce.setString(name + sColor + "WIN!");
+	}
+	else if (color == 'w')
 	{
 		announce.setString("WHITE PLAYER WIN!");
-		announce.setPosition(centerPos.x - announce.getGlobalBounds().width / 2, centerPos.y - announce.getGlobalBounds().height / 2 - 100);
 	}
 	else if (color == 'b')
 	{
 		announce.setString("BLACK PLAYER WIN!");
-		announce.setPosition(centerPos.x - announce.getGlobalBounds().width / 2, centerPos.y - announce.getGlobalBounds().height / 2 - 100);
 	}
+
+	announce.setPosition(centerPos.x - announce.getGlobalBounds().width / 2, centerPos.y - announce.getGlobalBounds().height / 2 - 100);
 
 	sf::sleep(sf::seconds(2));
 	m_window.clear(sf::Color::White);
@@ -746,7 +752,7 @@ void Game::Multiplayer()
 					packet.clear();
 					socket.disconnect();
 
-					AnnounceWinner(m_pImpl->m_playerOne->GetColor());
+					AnnounceWinner(m_pImpl->m_playerOne->GetColor(), myName);
 					return;
 				}
 			}
@@ -777,7 +783,7 @@ void Game::Multiplayer()
 					{
 						DrawGame();
 						socket.disconnect();
-						AnnounceWinner(m_pImpl->m_playerTwo->GetColor());
+						AnnounceWinner(m_pImpl->m_playerTwo->GetColor(), enemyName);
 						return;
 					}
 				}
@@ -786,4 +792,5 @@ void Game::Multiplayer()
 			}
 		}
 	}
+	socket.disconnect();
 }

@@ -19,7 +19,7 @@ class Game
 	Game& operator=(const Game&) = delete;
 
 	void SetStartedBoard();
-	void AnnounceWinner(const char& color);
+	void AnnounceWinner(const char& color, const std::string name);
 	std::string EnterName();
 	char SearchGame(sf::TcpSocket& socket);
 public:
