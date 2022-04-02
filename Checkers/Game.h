@@ -22,9 +22,10 @@ class Game
 	void AnnounceWinner(const char& color, const std::string name);
 	std::string EnterName();
 	char SearchGame(sf::TcpSocket& socket);
+	void ShowPlayersNames();
 public:
 	char m_board[8][8];
-	GameDataPacket m_dataPacket;  //для игрока(костыль)
+	GameDataPacket m_dataPacket;  //для игрока(костыль?)
 
 	sf::RenderWindow m_window;
 	sf::Event m_event;

@@ -767,6 +767,7 @@ char Game::SearchGame(sf::TcpSocket& socket)
 			m_window.draw(loading);
 			m_window.display();
 			sf::sleep(sf::seconds(1));
+			ShowPlayersNames();
 
 			return turn[0];
 		}
@@ -782,6 +783,44 @@ char Game::SearchGame(sf::TcpSocket& socket)
 		m_window.draw(back);
 		m_window.display();
 	}
+}
+
+void Game::ShowPlayersNames()
+{
+	sf::Vector2f centerPos = sf::Vector2f(m_window.getSize().x / 2, m_window.getSize().y / 2);
+
+	sf::Text vs("VS", m_pImpl->m_font);
+	vs.setFillColor(sf::Color::Black);
+	vs.setCharacterSize(30);
+	vs.setStyle(sf::Text::Style::Bold);
+	vs.setPosition(centerPos.x - vs.getGlobalBounds().width / 2, centerPos.y - vs.getGlobalBounds().height);
+
+	sf::Text you(m_pImpl->m_playerOne->GetName(), m_pImpl->m_font);
+	you.setFillColor(sf::Color::Black);
+	you.setCharacterSize(30);
+
+	sf::Text enemy(m_pImpl->m_playerTwo->GetName(), m_pImpl->m_font);
+	enemy.setFillColor(sf::Color::Black);
+	enemy.setCharacterSize(30);
+
+	if (m_pImpl->m_playerOne->GetColor() == 'w')
+	{
+		you.setPosition(centerPos.x - you.getGlobalBounds().width / 2, centerPos.y - you.getGlobalBounds().height + 100);
+		enemy.setPosition(centerPos.x - enemy.getGlobalBounds().width / 2, centerPos.y - enemy.getGlobalBounds().height - 100);
+	}
+	else
+	{
+		you.setPosition(centerPos.x - you.getGlobalBounds().width / 2, centerPos.y - you.getGlobalBounds().height - 100);
+		enemy.setPosition(centerPos.x - enemy.getGlobalBounds().width / 2, centerPos.y - enemy.getGlobalBounds().height + 100);
+	}
+
+	m_window.clear(sf::Color::White);
+	m_window.draw(vs);
+	m_window.draw(you);
+	m_window.draw(enemy);
+	m_window.display();
+
+	sf::sleep(sf::seconds(3));
 }
 
 void Game::Multiplayer()
