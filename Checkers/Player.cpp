@@ -5,7 +5,7 @@ Player::Player(char&& color) :m_color(std::move(color))
 {
 	Game* game = Game::GetInstance();
 	m_NbeatChecker = -1;
-	queened = false;
+	m_queened = false;
 
 	for (int i = 0; i < 8; i++)
 	{
@@ -32,6 +32,16 @@ void Player::draw(sf::RenderTarget& target, sf::RenderStates states) const
 	{
 		game->m_window.draw(i);
 	}
+}
+
+void Player::SetName(const std::string& name)
+{
+	m_name = name;
+}
+
+std::string Player::GetName() const
+{
+	return m_name;
 }
 
 bool Player::EatChecker()
@@ -72,9 +82,9 @@ bool Player::CanBeat()
 
 bool Player::CanBeatAgain()
 {
-	if (queened == true)
+	if (m_queened == true)
 	{
-		queened = false;
+		m_queened = false;
 		return false;
 	}
 

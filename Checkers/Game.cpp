@@ -2,7 +2,6 @@
 #include "Player.h"
 #include "Human.h"
 #include "AI.h"
-#include <iostream>
 
 Game* Game::m_game = nullptr;
 
@@ -13,6 +12,7 @@ struct GameIMPL
 	sf::Sprite m_s_board;
 	bool m_sound;
 	bool m_returnToMainMenu;
+	bool m_MP;
 	sf::Texture m_t_soundOn;
 	sf::Texture m_t_soundOff;
 	sf::Sprite m_s_sound;
@@ -31,6 +31,7 @@ GameIMPL::GameIMPL()
 	m_t_soundOff.loadFromFile("images/sound_off.png");	
 	m_sound = true;
 	m_returnToMainMenu = false;
+	m_MP = false;
 	
 	m_playerOne = nullptr;
 	m_playerTwo = nullptr;
@@ -316,7 +317,7 @@ bool Game::DrawMenu()
 	}
 }
 
-void Game::DrawPossibleMoves(const std::vector<sf::Vector2i>& pos, const bool& canMove, const char& player, const bool MP = false)
+void Game::DrawPossibleMoves(const std::vector<sf::Vector2i>& pos, const bool& canMove, const char& player)
 {
 	sf::RectangleShape shape;
 	shape.setFillColor(sf::Color(255, 255, 0, 0));
@@ -335,7 +336,7 @@ void Game::DrawPossibleMoves(const std::vector<sf::Vector2i>& pos, const bool& c
 		}
 	}
 
-	if (player == 'w' || MP)
+	if (player == 'w' || m_pImpl->m_MP)
 	{
 		m_window.draw(*m_pImpl->m_playerTwo);
 		m_window.draw(*m_pImpl->m_playerOne);
@@ -657,53 +658,149 @@ std::string Game::EnterName()
 
 char Game::SearchGame(sf::TcpSocket& socket)
 {
-	std::string turn;
+	std::string myName = EnterName();
+	if (myName == "\0")
+		return '\0';
 
+	sf::Vector2f centerPos = sf::Vector2f(m_window.getSize().x / 2, m_window.getSize().y / 2 - 40);
+	
+	sf::Text loading("   Loading . . .", m_pImpl->m_font);
+	loading.setFillColor(sf::Color::Black);
+	loading.setCharacterSize(30);
+	loading.setStyle(sf::Text::Style::Bold);
+	loading.setPosition(centerPos.x - loading.getGlobalBounds().width / 2, centerPos.y - loading.getGlobalBounds().height);
 
+	m_window.clear(sf::Color::White);
+	m_window.draw(loading);
+	m_window.display();
 
-	return turn[0];
+	if (socket.connect("localhost", 55055, sf::seconds(3)) != sf::Socket::Status::Done)   //192.168.0.105
+	{
+		loading.setString("       Failed connection\nCheck Ethernet connection");
+		loading.setCharacterSize(24);
+		loading.setPosition(centerPos.x - loading.getGlobalBounds().width / 2, centerPos.y - loading.getGlobalBounds().height);
+
+		m_window.clear(sf::Color::White);
+		m_window.draw(loading);
+		m_window.display();
+		sf::sleep(sf::seconds(3));
+
+		return '\0';
+	}	
+
+	sf::Packet packet;
+	std::string turn, enemyName;
+
+	socket.setBlocking(false);
+
+	loading.setString("  Searching . . .");
+	sf::Text back("Back", m_pImpl->m_font);
+	back.setFillColor(sf::Color::Black);
+	back.setCharacterSize(24);
+	back.setPosition(35 - back.getGlobalBounds().width / 2, 475 - back.getGlobalBounds().height);
+
+	while (m_window.isOpen())
+	{
+		if (m_window.pollEvent(m_event))
+		{
+			if (m_event.type == sf::Event::Closed)
+				m_window.close();
+			if (m_event.type == sf::Event::KeyReleased)
+			{
+				if (m_event.key.code == sf::Keyboard::Escape)
+				{
+					if (DrawMenu())
+					{
+						socket.disconnect();
+						return '\0';
+					}
+				}
+			}
+			if (m_event.type == sf::Event::MouseButtonReleased && m_event.key.code == sf::Mouse::Left)
+			{
+				if (sf::IntRect(back.getGlobalBounds()).contains(sf::Mouse::getPosition(m_window)))
+				{
+					m_window.clear(sf::Color::White);
+					socket.disconnect();
+					return '\1';
+				}
+			}
+		}
+
+		if (socket.receive(packet) == sf::Socket::Done)
+		{
+			packet >> turn;
+			packet.clear();
+
+			packet << myName;
+			socket.send(packet);
+			packet.clear();
+
+			socket.setBlocking(true);
+
+			if (socket.receive(packet) == sf::Socket::Done)
+			{
+				packet >> enemyName;
+				packet.clear();
+			}
+
+			if (turn == "f")
+			{
+				m_pImpl->m_playerOne = new Human('w');
+				m_pImpl->m_playerTwo = new Human('b');
+			}
+			else
+			{
+				m_pImpl->m_playerOne = new Human('b');
+				m_pImpl->m_playerTwo = new Human('w');
+			}
+
+			m_pImpl->m_playerOne->SetName(myName);
+			m_pImpl->m_playerTwo->SetName(enemyName);
+
+			socket.setBlocking(false);
+
+			m_pImpl->m_MP = true;
+
+			loading.setString("Start Game");
+			m_window.clear(sf::Color::White);
+			m_window.draw(loading);
+			m_window.display();
+			sf::sleep(sf::seconds(1));
+
+			return turn[0];
+		}
+
+		back.setFillColor(sf::Color::Black);
+		if (sf::IntRect(back.getGlobalBounds()).contains(sf::Mouse::getPosition(m_window)))
+		{
+			back.setFillColor(sf::Color::Blue);
+		}
+
+		m_window.clear(sf::Color::White);
+		m_window.draw(loading);
+		m_window.draw(back);
+		m_window.display();
+	}
 }
 
 void Game::Multiplayer()
 {
-	std::string myName = EnterName();
-	if (myName == "\0")
-		return;
-	sf::Packet packet;
-
 	sf::TcpSocket socket;
-	socket.connect("localhost", 55055);
 
-	std::string turn;
-	if (socket.receive(packet) == sf::Socket::Done)
+	char turn;
+	while (true)
 	{
-		packet >> turn;
-		packet.clear();
+		turn = SearchGame(socket);
+		if (turn == '\0')
+			return;
+		else if (turn == '\1')
+			continue;
+		else
+			break;
 	}
 
-	packet << myName;
-	socket.send(packet);
-	packet.clear();
-
-	std::string enemyName;
-	if (socket.receive(packet) == sf::Socket::Done)
-	{
-		packet >> enemyName;
-		packet.clear();
-	}
-
-	socket.setBlocking(false);
-
-	if (turn == "f")
-	{
-		m_pImpl->m_playerOne = new Human('w');
-		m_pImpl->m_playerTwo = new Human('b');
-	}
-	else
-	{
-		m_pImpl->m_playerOne = new Human('b');
-		m_pImpl->m_playerTwo = new Human('w');
-	}
+	sf::Packet packet;
 
 	while (m_window.isOpen())
 	{
@@ -726,7 +823,7 @@ void Game::Multiplayer()
 
 		DrawGame();
 
-		if (turn == "f")
+		if (turn == 'f')
 		{
 			while (m_pImpl->m_playerOne->MakeMove())
 			{
@@ -751,8 +848,9 @@ void Game::Multiplayer()
 					socket.send(packet);
 					packet.clear();
 					socket.disconnect();
+					m_pImpl->m_MP = false;
 
-					AnnounceWinner(m_pImpl->m_playerOne->GetColor(), myName);
+					AnnounceWinner(m_pImpl->m_playerOne->GetColor(), m_pImpl->m_playerOne->GetName());
 					return;
 				}
 			}
@@ -761,7 +859,7 @@ void Game::Multiplayer()
 			socket.send(packet);
 			packet.clear();
 
-			turn = "s";
+			turn = 's';
 		}
 		else
 		{
@@ -777,18 +875,20 @@ void Game::Multiplayer()
 						DrawGame();
 
 						if (!m_pImpl->m_playerTwo->CanBeatAgain())
-							turn = "f";
+							turn = 'f';
 					}
 					else
 					{
 						DrawGame();
 						socket.disconnect();
-						AnnounceWinner(m_pImpl->m_playerTwo->GetColor(), enemyName);
+						m_pImpl->m_MP = false;
+
+						AnnounceWinner(m_pImpl->m_playerTwo->GetColor(), m_pImpl->m_playerTwo->GetName());
 						return;
 					}
 				}
 				else
-					turn = "f";
+					turn = 'f';
 			}
 		}
 	}

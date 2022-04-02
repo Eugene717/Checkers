@@ -100,7 +100,7 @@ bool Human::MakeMove()
 						game->m_dataPacket.m_starterPos.first = m_checkers[nChecker].GetPosition().x;
 						game->m_dataPacket.m_starterPos.second = m_checkers[nChecker].GetPosition().y;
 
-						std::pair<bool, bool> moveRes = m_checkers[nChecker].Move(sf::Vector2f(pos.x, pos.y), canMove, queened);
+						std::pair<bool, bool> moveRes = m_checkers[nChecker].Move(sf::Vector2f(pos.x, pos.y), canMove, m_queened);
 
 						game->m_dataPacket.m_finishPos.first = m_checkers[nChecker].GetPosition().x;
 						game->m_dataPacket.m_finishPos.second = m_checkers[nChecker].GetPosition().y;
@@ -134,7 +134,7 @@ bool Human::MakeMove()
 					}
 				}
 			}
-			game->DrawPossibleMoves(m_checkers[nChecker].CanMove(), canMove, GetColor(), true);
+			game->DrawPossibleMoves(m_checkers[nChecker].CanMove(), canMove, GetColor());
 		}
 	}
 }
@@ -150,7 +150,7 @@ bool Human::MoveMP()
 		if (m_checkers[i] == game->m_dataPacket.m_starterPos)
 		{
 			m_NbeatChecker = i;
-			return m_checkers[i].Move(sf::Vector2f(game->m_dataPacket.m_finishPos.second * 56 + 29, game->m_dataPacket.m_finishPos.first * 56 +29), true, queened).second;
+			return m_checkers[i].Move(sf::Vector2f(game->m_dataPacket.m_finishPos.second * 56 + 29, game->m_dataPacket.m_finishPos.first * 56 +29), true, m_queened).second;
 		}
 	}
 
