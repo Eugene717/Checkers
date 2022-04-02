@@ -48,7 +48,18 @@ bool Player::EatChecker()
 {
 	m_checkers.erase(std::remove_if(m_checkers.begin(), m_checkers.end(), [&](Checker& i) { if (i.Alived()) return false; else return true; }), m_checkers.end());
 
-	if (m_checkers.empty())
+	bool canMove = false;
+
+	for (size_t i = 0; i < m_checkers.size(); i++)
+	{
+		if (m_checkers[i].CanMove().size() > 0)
+		{
+			canMove = true;
+			break;
+		}
+	}
+
+	if (m_checkers.empty() || !canMove)
 	{
 		Game* game = Game::GetInstance();
 		game->m_dataPacket.m_finishGame = true;

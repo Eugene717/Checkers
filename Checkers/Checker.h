@@ -31,8 +31,8 @@ class Checker :public sf::Drawable
 public:
 	Checker(sf::Vector2i&& pos, char color) noexcept;
 	~Checker();
-	bool operator==(const std::pair<int, int>& other);
-	void replace(const std::pair<int, int>& pos);
+	bool operator==(const sf::Vector2i& other);
+	void replace(const sf::Vector2i& pos);
 	sf::FloatRect getGlobalBounds() const;
 	void setPosition(const float& x, const float& y);
 	sf::Vector2i GetPosition() const;

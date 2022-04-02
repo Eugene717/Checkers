@@ -59,15 +59,15 @@ Checker::~Checker()
 	}
 }
 
-bool Checker::operator==(const std::pair<int, int>& other)
+bool Checker::operator==(const sf::Vector2i& other)
 {
-	return m_pos.x == other.first && m_pos.y == other.second;
+	return m_pos.x == other.x && m_pos.y == other.y;
 }
 
-void Checker::replace(const std::pair<int, int>& pos)
+void Checker::replace(const sf::Vector2i& pos)
 {
-	m_pos.x = pos.first;
-	m_pos.y = pos.second;
+	m_pos.x = pos.x;
+	m_pos.y = pos.y;
 
 	m_posGraphic.x = m_pos.y * 56 + 56;
 	m_posGraphic.y = m_pos.x * 56 + 56;
