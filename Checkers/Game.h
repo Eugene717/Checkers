@@ -23,6 +23,7 @@ class Game
 	std::string EnterName();
 	char SearchGame(sf::TcpSocket& socket);
 	void ShowPlayersNames();
+	void ShutdownMes(const int& playerN);
 public:
 	char m_board[8][8];
 	GameDataPacket m_dataPacket;  //для игрока(костыль?)

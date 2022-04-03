@@ -674,7 +674,7 @@ char Game::SearchGame(sf::TcpSocket& socket)
 	m_window.draw(loading);
 	m_window.display();
 
-	if (socket.connect("localhost", 55055, sf::seconds(3)) != sf::Socket::Status::Done)   //192.168.0.105
+	if (socket.connect("localhost", 55055, sf::seconds(3)) != sf::Socket::Status::Done)   //192.168.0.105 для примера
 	{
 		loading.setString("       Failed connection\nCheck Ethernet connection");
 		loading.setCharacterSize(24);
@@ -823,6 +823,30 @@ void Game::ShowPlayersNames()
 	sf::sleep(sf::seconds(3));
 }
 
+void Game::ShutdownMes(const int& playerN)
+{
+	sf::Vector2f centerPos = sf::Vector2f(m_window.getSize().x / 2, m_window.getSize().y / 2 - 40);
+
+	sf::Text shutdown("", m_pImpl->m_font);
+	shutdown.setFillColor(sf::Color::Black);
+	shutdown.setCharacterSize(30);
+	shutdown.setStyle(sf::Text::Style::Bold);
+
+	if (playerN == 1)
+		shutdown.setString(m_pImpl->m_playerOne->GetName() + " left from game");
+	else
+		shutdown.setString(m_pImpl->m_playerTwo->GetName() + " left from game");
+
+	shutdown.setPosition(centerPos.x - shutdown.getGlobalBounds().width / 2, centerPos.y - shutdown.getGlobalBounds().height);
+
+	sf::sleep(sf::seconds(1));
+	m_window.clear(sf::Color::White);
+	m_window.draw(shutdown);
+	m_window.display();
+
+	sf::sleep(sf::seconds(2));
+}
+
 void Game::Multiplayer()
 {
 	sf::TcpSocket socket;
@@ -902,7 +926,8 @@ void Game::Multiplayer()
 		}
 		else
 		{
-			if (socket.receive(packet) == sf::Socket::Done)
+			sf::Socket::Status status = socket.receive(packet);
+			if (status == sf::Socket::Done)
 			{
 				packet >> m_dataPacket;	
 				packet.clear();
@@ -928,6 +953,14 @@ void Game::Multiplayer()
 				}
 				else
 					turn = 'f';
+			}
+			else if (status == sf::Socket::Status::Disconnected)
+			{
+				socket.disconnect();
+				
+				ShutdownMes(2);
+				AnnounceWinner(m_pImpl->m_playerOne->GetColor(), m_pImpl->m_playerOne->GetName());
+				return;
 			}
 		}
 	}
