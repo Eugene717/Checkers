@@ -396,14 +396,19 @@ void Game::AnnounceWinner(const char& color, const std::string name = "\0")
 		announce.setString("BLACK PLAYER WIN!");
 	}
 
-	announce.setPosition(centerPos.x - announce.getGlobalBounds().width / 2, centerPos.y - announce.getGlobalBounds().height / 2 - 100);
+	announce.setPosition(centerPos.x - announce.getGlobalBounds().width / 2, centerPos.y - announce.getGlobalBounds().height / 2 - 50);
 
-	sf::sleep(sf::seconds(2));
 	m_window.clear(sf::Color::White);
 	m_window.draw(announce);
 	m_window.display();
-	sf::sleep(sf::seconds(3));
+	sf::sleep(sf::seconds(2));
 
+	SetStartedBoard();
+	GameEnd();
+}
+
+void Game::GameEnd()
+{
 	SetStartedBoard();
 	delete m_pImpl->m_playerOne;
 	delete m_pImpl->m_playerTwo;
@@ -721,6 +726,7 @@ char Game::SearchGame(sf::TcpSocket& socket)
 				if (sf::IntRect(back.getGlobalBounds()).contains(sf::Mouse::getPosition(m_window)))
 				{
 					m_window.clear(sf::Color::White);
+					socket.setBlocking(true);
 					socket.disconnect();
 					return '\1';
 				}
@@ -767,7 +773,9 @@ char Game::SearchGame(sf::TcpSocket& socket)
 			m_window.draw(loading);
 			m_window.display();
 			sf::sleep(sf::seconds(1));
+
 			ShowPlayersNames();
+			m_dataPacket.m_finishGame = false;
 
 			return turn[0];
 		}
@@ -844,7 +852,7 @@ void Game::ShutdownMes(const int& playerN)
 	m_window.draw(shutdown);
 	m_window.display();
 
-	sf::sleep(sf::seconds(2));
+	sf::sleep(sf::seconds(1));
 }
 
 void Game::Multiplayer()
@@ -878,6 +886,7 @@ void Game::Multiplayer()
 					if (DrawMenu())
 					{
 						socket.disconnect();
+						GameEnd();
 						return;
 					}
 				}
@@ -917,12 +926,20 @@ void Game::Multiplayer()
 					return;
 				}
 			}
+			if (!m_dataPacket.m_finishGame)
+			{
+				packet << m_dataPacket;
+				socket.send(packet);
+				packet.clear();
 
-			packet << m_dataPacket;
-			socket.send(packet);
-			packet.clear();
-
-			turn = 's';
+				turn = 's';
+			}
+			else
+			{
+				socket.disconnect();
+				GameEnd();
+				return;
+			}
 		}
 		else
 		{

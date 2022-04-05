@@ -49,13 +49,19 @@ bool Human::MakeMove()
 		if (game->m_window.pollEvent(game->m_event))
 		{
 			if (game->m_event.type == sf::Event::Closed)
+			{
+				game->m_dataPacket.m_finishGame = true;
 				game->m_window.close();
+			}
 			if (game->m_event.type == sf::Event::KeyReleased)
 			{
 				if (game->m_event.key.code == sf::Keyboard::Escape)
 				{
 					if (game->DrawMenu())
+					{
+						game->m_dataPacket.m_finishGame = true;
 						return false;
+					}
 				}
 			}
 			if (game->m_event.type == sf::Event::MouseButtonPressed)

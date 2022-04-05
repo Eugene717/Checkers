@@ -20,6 +20,7 @@ class Game
 
 	void SetStartedBoard();
 	void AnnounceWinner(const char& color, const std::string name);
+	void GameEnd();
 	std::string EnterName();
 	char SearchGame(sf::TcpSocket& socket);
 	void ShowPlayersNames();
