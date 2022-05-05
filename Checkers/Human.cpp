@@ -68,16 +68,13 @@ bool Human::MakeMove()
 			{
 				if (game->m_event.mouseButton.button == sf::Mouse::Left)
 				{
-					if (sf::Mouse::isButtonPressed(sf::Mouse::Left))
+					for (int i = 0; i < m_checkers.size(); i++)
 					{
-						for (int i = 0; i < m_checkers.size(); i++)
+						if (sf::IntRect(m_checkers[i].getGlobalBounds()).contains(sf::Mouse::getPosition(game->m_window)))
 						{
-							if (sf::IntRect(m_checkers[i].getGlobalBounds()).contains(sf::Mouse::getPosition(game->m_window)))
-							{
-								isMove = true;
-								nChecker = i;
-								m_p_moved_checker = &m_checkers[i];
-							}
+							isMove = true;
+							nChecker = i;
+							m_p_moved_checker = &m_checkers[i];
 						}
 					}
 				}
