@@ -36,7 +36,6 @@ int main()
 			game->Multiplayer();
 			break;
 		case 4:
-			//std::cout << "Не работает блять, хули клацаешь?\n";
 			//game->DrawGame();
 			break;
 		case 5:
