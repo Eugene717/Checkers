@@ -1,5 +1,5 @@
 # Checkers
-"Windows Checkers is a classic board game played on an 8x8 board where players must strategically move their pieces diagonally to capture their opponent's pieces by jumping over them. The game can be played with two players locally or online and features a soundtrack to enhance the gaming experience."
+Windows Checkers is a classic board game played on an 8x8 board where players must strategically move their pieces diagonally to capture their opponent's pieces by jumping over them. The game can be played with two players locally or online and features a soundtrack to enhance the gaming experience.
 ## Gameplay:
 - Checkers is a classic board game played on an 8x8 board.
 - Each player starts with 12 black or white pieces, which are placed on black.
